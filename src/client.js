@@ -115,6 +115,7 @@ class Client extends Base {
       xml = null,
       req = null,
       soapAction,
+      outputResponseName = options.outputResponseName,
       headers = {
         'Content-Type': 'text/xml; charset=utf-8'
       };
@@ -319,9 +320,14 @@ class Client extends Base {
         if (outputBodyDescriptor.elements.length) {
           result = obj.Body[outputBodyDescriptor.elements[0].qname.name];
         }
+
+        if (!result && outputResponseName) { 
+          result = obj.Body[outputResponseName];
+        }  
+
         // RPC/literal response body may contain elements with added suffixes I.E.
         // 'Response', or 'Output', or 'Out'
-        // This doesn't necessarily equal the ouput message name. See WSDL 1.1 Section 2.4.5
+        // This doesn't necessarily equal the ouput message name. See WSDL 1.1 Section 2.4.5      
         if (!result) {
           var outputName = output.$name &&
             output.$name.replace(/(?:Out(?:put)?|Response)$/, '');
@@ -334,6 +340,7 @@ class Client extends Base {
             }
           });
         }
+
         debug('client response. result: %j body: %j obj.Header: %j', result, body, obj.Header);
 
         callback(null, result, body, obj.Header);
